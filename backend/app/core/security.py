@@ -1,6 +1,6 @@
 <file>
       <absolute_file_name>/app/backend/app/core/security.py</absolute_file_name>
-      <content">from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Optional, Union
 from jose import JWTError, jwt
 from passlib.context import CryptContext
