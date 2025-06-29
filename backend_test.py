@@ -293,14 +293,16 @@ def test_voice_chat():
     url = f"{BACKEND_URL}/api/voice/chat"
     
     headers = {
-        "Authorization": f"Bearer {access_token}"
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
     }
     
-    chat_data = {
+    # The message parameter is expected in the query string, not in the request body
+    params = {
         "message": "Check my balance"
     }
     
-    response = requests.post(url, json=chat_data, headers=headers)
+    response = requests.post(url, params=params, headers=headers)
     
     print_response(response)
     
