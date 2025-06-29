@@ -17,4 +17,4 @@ websockets==12.0
 celery==5.3.4
 aioredis==2.0.1
 httpx==0.25.2
-Pillow==10.1.0
+Pillow==10.1.0pydantic-settings==2.10.1
