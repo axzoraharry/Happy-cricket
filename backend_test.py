@@ -23,7 +23,7 @@ print(f"Using backend URL: {BACKEND_URL}")
 TEST_USER = {
     "email": "test@happycricket.com",
     "username": "testuser",
-    "password": "password123",
+    "password": "testpass123",
     "full_name": "Test User",
     "phone": "9876543210",
     "country": "IN"
