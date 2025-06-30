@@ -9,6 +9,7 @@ const mockDatabase = {
 // Mock SQL template function
 const mockSql = (strings: TemplateStringsArray, ...values: any[]) => {
   const query = strings.join('?')
+  console.log('Mock SQL Query:', query, 'Values:', values)
   
   // Mock user registration
   if (query.includes('INSERT INTO users')) {
@@ -21,13 +22,18 @@ const mockSql = (strings: TemplateStringsArray, ...values: any[]) => {
       created_at: new Date().toISOString()
     }
     mockDatabase.users.push(newUser)
+    console.log('User created:', newUser)
+    console.log('Total users:', mockDatabase.users.length)
     return Promise.resolve([newUser])
   }
   
   // Mock user selection
   if (query.includes('SELECT * FROM users WHERE email')) {
     const [email] = values
+    console.log('Looking for user with email:', email)
+    console.log('Available users:', mockDatabase.users.map(u => u.email))
     const user = mockDatabase.users.find(u => u.email === email)
+    console.log('Found user:', user)
     return Promise.resolve(user ? [user] : [])
   }
   
