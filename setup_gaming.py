@@ -203,6 +203,7 @@ async def setup_gaming_system():
                 {"name": "boundary_double", "description": "Double down on boundary cards (4, 6)"}
             ],
             "is_active": True,
+            "status": "active",  # Add status field for compatibility
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
         }
