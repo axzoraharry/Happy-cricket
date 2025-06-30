@@ -88,6 +88,7 @@ async def setup_gaming_system():
             ],
             "bonus_features": ["jackpot", "free_spins", "scatter_wins"],
             "is_active": True,
+            "status": "active",  # Add status field for compatibility
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
         },
