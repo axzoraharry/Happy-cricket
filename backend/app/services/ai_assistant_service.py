@@ -141,6 +141,187 @@ class CricketAIAssistant:
         - Include relevant statistics when available
         - Always end with a helpful suggestion or question
         """
+
+    async def process_chat_message(
+        self, 
+        message: str, 
+        user: Optional[UserResponse] = None,
+        session_id: Optional[str] = None
+    ) -> str:
+        """Process chat message with enhanced cricket knowledge"""
+        try:
+            # If OpenAI is available, use it
+            if self.openai_client:
+                return await self._process_with_openai(message, user, session_id)
+            
+            # Otherwise, use enhanced mock responses
+            return await self._process_with_cricket_ai(message, user, session_id)
+            
+        except Exception as e:
+            print(f"AI Assistant error: {e}")
+            return "I apologize, but I'm having trouble processing your request right now. Please try again!"
+    
+    async def _process_with_openai(self, message: str, user: Optional[UserResponse], session_id: Optional[str]) -> str:
+        """Process message using OpenAI"""
+        try:
+            # Get user context
+            user_context = await self._get_user_context(user) if user else {}
+            
+            # Prepare conversation messages
+            messages = [
+                {"role": "system", "content": self.cricket_context},
+                {"role": "user", "content": f"User context: {json.dumps(user_context)}\nUser query: {message}"}
+            ]
+            
+            # Get AI response
+            response = self.openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                max_tokens=300,
+                temperature=0.7
+            )
+            
+            ai_response = response.choices[0].message.content
+            
+            # Process any action commands
+            await self._process_action_commands(message, user, ai_response)
+            
+            # Store conversation
+            if user:
+                await self._store_conversation(user.user_id, message, ai_response, session_id)
+            
+            return ai_response
+            
+        except Exception as e:
+            print(f"OpenAI error: {e}")
+            # Fallback to cricket AI
+            return await self._process_with_cricket_ai(message, user, session_id)
+    
+    async def _process_with_cricket_ai(self, message: str, user: Optional[UserResponse], session_id: Optional[str]) -> str:
+        """Enhanced cricket AI with comprehensive responses"""
+        try:
+            message_lower = message.lower()
+            
+            # Get user context for personalized responses
+            user_context = await self._get_user_context(user) if user else {}
+            
+            # Greeting responses
+            if any(word in message_lower for word in ['hello', 'hi', 'hey', 'good morning', 'good evening']):
+                response = random.choice(self.response_templates["greeting"])
+                if user:
+                    response += f" Your wallet has {user_context.get('happy_coin_balance', 0)} Happy Coins."
+                return response
+            
+            # Team information queries
+            for team_name, team_info in self.cricket_knowledge["teams"].items():
+                if team_name in message_lower:
+                    format_type = "odi" if "odi" in message_lower else "t20" if "t20" in message_lower else "test"
+                    ranking = team_info["ranking"].get(format_type, "N/A")
+                    
+                    response = f"🏏 {team_name.title()} is currently ranked #{ranking} in {format_type.upper()}. "
+                    response += f"Captain: {team_info['captain']}. "
+                    response += f"Key players: {', '.join(team_info['star_players'][:2])}. "
+                    response += f"Recent form: {team_info['recent_form']}. "
+                    
+                    if "bet" in message_lower or "odds" in message_lower:
+                        response += "Would you like betting tips for their upcoming matches?"
+                    
+                    return response
+            
+            # Live match queries
+            if any(word in message_lower for word in ['live', 'current', 'happening', 'now']):
+                try:
+                    live_matches = await cricket_service.get_live_matches()
+                    if live_matches.get('status') == 'ok' and live_matches.get('response', {}).get('items'):
+                        matches = live_matches['response']['items']
+                        response = f"📺 Currently {len(matches)} live matches: "
+                        for match in matches[:2]:
+                            team_a = match.get('teama', {}).get('name', 'Team A')
+                            team_b = match.get('teamb', {}).get('name', 'Team B')
+                            response += f"{team_a} vs {team_b}, "
+                        response += "Want live betting tips for any of these?"
+                        return response
+                    else:
+                        return "🏏 No live matches currently. Check out our upcoming matches for pre-match betting!"
+                except:
+                    return "🏏 I'm checking live matches for you. Meanwhile, would you like to know about upcoming games?"
+            
+            # Betting advice queries
+            if any(word in message_lower for word in ['bet', 'betting', 'odds', 'tip', 'advice', 'predict']):
+                tips = random.sample(self.cricket_knowledge["betting_tips"]["general"], 2)
+                response = "🎯 Here are some betting tips: "
+                response += f"{tips[0]} Also, {tips[1]} "
+                
+                if "live" in message_lower:
+                    live_tips = random.choice(self.cricket_knowledge["betting_tips"]["live_betting"])
+                    response += f"For live betting: {live_tips}"
+                
+                return response
+            
+            # Wallet queries
+            if any(word in message_lower for word in ['wallet', 'balance', 'money', 'coin', 'deposit']):
+                balance = user_context.get('happy_coin_balance', 0)
+                response = f"💰 Your wallet: {balance} Happy Coins (₹{balance * 1000:,}). "
+                
+                if balance < 1:
+                    response += "Low balance! You can deposit via Stripe or Razorpay. Minimum deposit is ₹100."
+                else:
+                    response += "Good balance for betting! Remember to bet responsibly."
+                
+                return response
+            
+            # Statistics queries
+            if any(word in message_lower for word in ['stats', 'statistics', 'record', 'performance']):
+                fact = random.choice(self.cricket_knowledge["cricket_facts"])
+                return f"📊 Here's an interesting cricket stat: {fact} Want specific team or player statistics?"
+            
+            # Platform features
+            if any(word in message_lower for word in ['help', 'feature', 'how', 'what can']):
+                features = list(self.cricket_knowledge["platform_features"].items())
+                feature_name, feature_desc = random.choice(features)
+                response = f"🚀 Platform Feature: {feature_desc} "
+                response += "You can also ask me about live matches, betting tips, team info, or your wallet!"
+                return response
+            
+            # Match predictions
+            if any(word in message_lower for word in ['predict', 'who will win', 'winner', 'forecast']):
+                predictions = [
+                    "Based on recent form, it's going to be a close match!",
+                    "The team batting first usually has an advantage on this pitch.",
+                    "Weather conditions might favor the bowling side today.",
+                    "Both teams are evenly matched - it could go either way!"
+                ]
+                response = f"🔮 {random.choice(predictions)} "
+                response += "Remember, cricket is unpredictable - that's what makes it exciting!"
+                return response
+            
+            # Casino/gaming queries
+            if any(word in message_lower for word in ['casino', 'slot', 'game', 'dice', 'roulette']):
+                response = "🎰 Our casino has cricket-themed games! Try Cricket Thunder Slots, Cricket Dice Roll, or Cricket Roulette. "
+                response += "All games use Happy Coins. Want me to show you the games list?"
+                return response
+            
+            # Default intelligent response
+            responses = [
+                "🏏 I'm Mr. Happy, your cricket assistant! I can help with live matches, betting tips, team stats, wallet info, and more. What interests you?",
+                "🎯 Ask me about current cricket matches, betting advice, team information, or your Happy Cricket wallet!",
+                "📊 I have lots of cricket knowledge! Try asking about live matches, player stats, betting tips, or platform features.",
+                "🚀 I'm here to help with all things cricket and betting! What would you like to know about?"
+            ]
+            
+            response = random.choice(responses)
+            
+            # Add personalized touch if user is logged in
+            if user:
+                balance = user_context.get('happy_coin_balance', 0)
+                if balance > 0:
+                    response += f" Your balance: {balance} HC."
+            
+            return response
+            
+        except Exception as e:
+            print(f"Cricket AI error: {e}")
+            return "I'm here to help with cricket and betting! Ask me about live matches, betting tips, team info, or your wallet."
     
     async def process_voice_query(
         self, 
