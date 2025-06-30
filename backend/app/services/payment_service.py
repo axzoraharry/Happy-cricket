@@ -1,6 +1,6 @@
 <file>
       <absolute_file_name>/app/backend/app/services/payment_service.py</absolute_file_name>
-      <content">import stripe
+import stripe
 import razorpay
 import hashlib
 import hmac
