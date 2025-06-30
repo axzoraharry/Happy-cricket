@@ -126,7 +126,7 @@ backend:
         comment: "Gaming API has issues with the start_game_session endpoint. It returns a 404 'Game not found' error. The games list is empty, and sample games creation requires admin access. The slot machine, crash game, and dice game endpoints return 500 errors with empty details when using dummy session IDs."
       - working: false
         agent: "testing"
-        comment: "Gaming API still has issues with the start_game_session endpoint. The API expects query parameters (game_id and bet_amount) instead of a JSON body. When using query parameters, it returns a 404 'Game not found' error because no games exist in the database. Creating sample games requires admin access, which the test user doesn't have. This is a design issue that needs to be addressed by either granting admin access to the test user or creating a test endpoint that doesn't require admin access."
+        comment: "Gaming API still has issues. The start_game_session endpoint returns 404 'Game not found' because no games exist in the database. Creating sample games requires admin access which the test user doesn't have. This is a design issue that needs to be addressed."
 
 frontend:
   - task: "User Authentication UI"
