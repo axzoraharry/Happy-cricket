@@ -62,53 +62,40 @@ const AdvancedVoiceAssistant = () => {
     }
   };
 
-  const sendTextMessage = async (message) => {
-    if (!message.trim() || !isAuthenticated) return;
-
-    addMessage('user', message);
-    setInputText('');
+  const sendTextMessage = async (text) => {
+    if (!text.trim() || !isAuthenticated) return;
+    
     setIsProcessing(true);
-
+    addMessage('user', text);
+    
     try {
-      const formData = new FormData();
-      formData.append('message', message);
-
-      const response = await axios.post(`${backendUrl}/api/voice/chat`, formData, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'multipart/form-data'
+      const response = await axios.post(
+        `${backendUrl}/api/voice/chat`,
+        {
+          message: text,
+          session_id: `session_${Date.now()}`
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
         }
-      });
-
-      // Get text response
-      const assistantText = response.data.response;
+      );
       
-      // Generate speech if auto-speak is enabled
-      let audioData = null;
-      if (autoSpeak) {
-        try {
-          const speechFormData = new FormData();
-          speechFormData.append('text', assistantText);
-          speechFormData.append('voice', voice);
-
-          const speechResponse = await axios.post(`${backendUrl}/api/voice/synthesize`, speechFormData, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
-              'Content-Type': 'multipart/form-data'
-            }
-          });
-
-          audioData = speechResponse.data.audio_data;
-        } catch (speechError) {
-          console.log('Speech synthesis failed:', speechError);
-        }
+      const aiResponse = response.data.response;
+      addMessage('assistant', aiResponse);
+      
+      // Auto-speak response if enabled
+      if (autoSpeak && aiResponse) {
+        speakText(aiResponse);
       }
-
-      addMessage('assistant', assistantText, audioData);
-
+      
     } catch (error) {
       console.error('Chat error:', error);
-      addMessage('assistant', "I'm sorry, I'm having trouble responding right now. Please try again.");
+      const errorMessage = error.response?.data?.detail || 'Sorry, I had trouble processing your message. Please try again.';
+      addMessage('assistant', errorMessage);
+      toast.error('Failed to get response from Mr. Happy');
     } finally {
       setIsProcessing(false);
     }
