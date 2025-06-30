@@ -155,6 +155,7 @@ async def setup_gaming_system():
                 {"name": "hat_trick", "description": "Three wicket cards", "payout": 25.0}
             ],
             "is_active": True,
+            "status": "active",  # Add status field for compatibility
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
         },
