@@ -10,24 +10,28 @@ router = APIRouter()
 
 @router.post("/place-bet")
 async def place_bet(
-    bet_data: BetCreate,
+    bet_data: dict,  # Use dict instead of BetCreate for flexibility
     current_user: UserResponse = Depends(get_current_user)
 ):
     """Place a new bet"""
     try:
+        # Extract required fields
+        stake_amount = bet_data.get("stake_amount", 0)
+        currency = bet_data.get("currency", "HC")
+        
         # Check if user has sufficient balance
         wallet = await wallet_service.get_wallet(current_user.user_id)
         if not wallet:
             raise HTTPException(status_code=404, detail="Wallet not found")
         
-        if bet_data.currency == "HC":
-            if wallet.happy_coin_balance < bet_data.stake_amount:
+        if currency == "HC":
+            if wallet.happy_coin_balance < stake_amount:
                 raise HTTPException(
                     status_code=400, 
                     detail="Insufficient Happy Coin balance"
                 )
         else:
-            if wallet.inr_balance < bet_data.stake_amount:
+            if wallet.inr_balance < stake_amount:
                 raise HTTPException(
                     status_code=400, 
                     detail="Insufficient INR balance"
@@ -37,17 +41,17 @@ async def place_bet(
         transaction_data = TransactionCreate(
             user_id=current_user.user_id,
             transaction_type=TransactionType.BET_PLACED,
-            amount=-bet_data.stake_amount,  # Negative for bet placement
-            currency=bet_data.currency,
-            description=f"Bet placed on {bet_data.selection_name} - {bet_data.bet_type}"
+            amount=-stake_amount,  # Negative for bet placement
+            currency=currency,
+            description=f"Bet placed on {bet_data.get('selection_name', 'Unknown')} - {bet_data.get('bet_type', 'Unknown')}"
         )
         
         # Process transaction (deduct from wallet)
         transaction = await wallet_service.create_transaction(transaction_data)
         await wallet_service.update_balance(
             current_user.user_id, 
-            -bet_data.stake_amount, 
-            bet_data.currency, 
+            -stake_amount, 
+            currency, 
             TransactionType.BET_PLACED
         )
         
@@ -57,9 +61,9 @@ async def place_bet(
         return {
             "message": "Bet placed successfully",
             "bet_id": f"bet_{transaction.transaction_id}",
-            "stake_amount": bet_data.stake_amount,
-            "potential_winnings": bet_data.stake_amount * bet_data.odds_value,
-            "odds": bet_data.odds_value,
+            "stake_amount": stake_amount,
+            "potential_winnings": stake_amount * bet_data.get('odds_value', 1.0),
+            "odds": bet_data.get('odds_value', 1.0),
             "status": "active"
         }
         
