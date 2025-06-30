@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import { sql } from "@/lib/db"
 
 export async function GET(request: Request) {
   try {
@@ -8,46 +7,38 @@ export async function GET(request: Request) {
     const limit = Number.parseInt(searchParams.get("limit") || "10")
     const offset = Number.parseInt(searchParams.get("offset") || "0")
 
-    let query = sql`
-      SELECT * FROM matches
-      WHERE status = ${status}
-    `
+    // Mock matches data for testing
+    const mockMatches = [
+      {
+        id: 1,
+        team_a: "India",
+        team_b: "Australia", 
+        venue: "Melbourne Cricket Ground",
+        match_date: new Date(Date.now() + 86400000).toISOString(), // tomorrow
+        match_type: "T20",
+        status: "upcoming"
+      },
+      {
+        id: 2,
+        team_a: "England",
+        team_b: "South Africa",
+        venue: "Lord's Cricket Ground", 
+        match_date: new Date(Date.now() + 172800000).toISOString(), // day after tomorrow
+        match_type: "ODI", 
+        status: "upcoming"
+      }
+    ]
 
-    if (status === "upcoming") {
-      query = sql`
-        ${query} AND match_date > NOW()
-        ORDER BY match_date ASC
-      `
-    } else if (status === "live") {
-      query = sql`
-        ${query}
-        ORDER BY match_date ASC
-      `
-    } else if (status === "completed") {
-      query = sql`
-        ${query}
-        ORDER BY match_date DESC
-      `
-    }
-
-    query = sql`
-      ${query}
-      LIMIT ${limit} OFFSET ${offset}
-    `
-
-    const matches = await query
-
-    // Get total count for pagination
-    const countResult = await sql`
-      SELECT COUNT(*) FROM matches
-      WHERE status = ${status}
-      ${status === "upcoming" ? sql`AND match_date > NOW()` : sql``}
-    `
-
-    const total = Number.parseInt(countResult[0].count)
+    // Filter matches by status
+    const filteredMatches = mockMatches.filter(match => match.status === status)
+    
+    // Apply pagination
+    const paginatedMatches = filteredMatches.slice(offset, offset + limit)
+    
+    const total = filteredMatches.length
 
     return NextResponse.json({
-      matches,
+      matches: paginatedMatches,
       pagination: {
         total,
         limit,
