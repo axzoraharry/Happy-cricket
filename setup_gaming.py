@@ -132,6 +132,7 @@ async def setup_gaming_system():
             "auto_cashout_options": [1.5, 2.0, 5.0, 10.0],
             "crash_probability": 0.99,  # Probability of not crashing at 1x
             "is_active": True,
+            "status": "active",  # Add status field for compatibility
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
         },
