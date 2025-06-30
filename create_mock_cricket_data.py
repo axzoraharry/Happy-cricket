@@ -17,6 +17,9 @@ async def create_mock_cricket_data():
     await connect_to_mongo()
     db = await get_database()
     
+    # Check actual database name being used
+    print(f"Using database: {db.name}")
+    
     # Collections
     matches_collection = db["cricket_matches"]
     teams_collection = db["cricket_teams"]
