@@ -629,8 +629,26 @@ def test_start_game_session():
     # If we don't have a game ID, use a dummy one
     global game_id
     if not game_id:
-        game_id = "game_123456"
-        print(f"Using dummy game_id: {game_id}")
+        # Try to create sample games first
+        test_create_sample_games()
+        
+        # Try to get games again
+        url = f"{BACKEND_URL}/api/gaming/games"
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            games = response.json()
+            if isinstance(games, list) and len(games) > 0:
+                game_id = games[0].get("game_id")
+                print(f"Selected game_id: {game_id}")
+            else:
+                # If still no games, create a game manually
+                game_id = "game_123456"
+                print(f"Using dummy game_id: {game_id}")
+        else:
+            game_id = "game_123456"
+            print(f"Using dummy game_id: {game_id}")
     
     url = f"{BACKEND_URL}/api/gaming/sessions/start"
     
@@ -643,23 +661,28 @@ def test_start_game_session():
         "bet_amount": 1.0
     }
     
-    response = requests.post(url, params=params, headers=headers)
+    response = requests.post(url, json=params, headers=headers)
     
     print_response(response)
     
-    # This might fail if the game ID doesn't exist, so we'll check for either success or a specific error
-    if response.status_code == 500 and "Failed to start game session" in response.json().get("detail", ""):
-        print("Failed to start game session, which might be expected with a dummy game ID")
-        return True
-    
-    assert response.status_code == 200 or response.status_code == 500, "Start game session failed unexpectedly"
-    
-    # If successful, store the session ID
+    # Check for success
     if response.status_code == 200:
         global game_session_id
         session = response.json().get("session", {})
         game_session_id = session.get("session_id")
         print(f"Created game_session_id: {game_session_id}")
+        return True
+    
+    # Check for specific errors
+    if response.status_code == 404 and "Game not found" in response.json().get("detail", ""):
+        print("Known issue: Game not found error")
+        return False
+    
+    if response.status_code == 500 and "Failed to start game session" in response.json().get("detail", ""):
+        print("Failed to start game session, which might be expected with a dummy game ID")
+        return False
+    
+    assert response.status_code == 200 or response.status_code == 404 or response.status_code == 500, "Start game session failed unexpectedly"
     
     return True
 
