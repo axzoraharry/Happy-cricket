@@ -580,6 +580,16 @@ def test_get_games():
     if isinstance(games, list) and len(games) > 0:
         game_id = games[0].get("game_id")
         print(f"Selected game_id: {game_id}")
+    else:
+        print("No games found. Will create sample games.")
+        # Try to create sample games
+        test_create_sample_games()
+        # Try to get games again
+        response = requests.get(url, headers=headers)
+        games = response.json()
+        if isinstance(games, list) and len(games) > 0:
+            game_id = games[0].get("game_id")
+            print(f"Selected game_id: {game_id}")
     
     return True
 
