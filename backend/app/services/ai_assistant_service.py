@@ -13,12 +13,105 @@ from ..services.cricket_service import cricket_service
 from fastapi import HTTPException, status
 import json
 import re
+import random
 
 class CricketAIAssistant:
-    """Advanced AI Assistant for Cricket Betting Platform"""
+    """Advanced AI Assistant for Cricket Betting Platform with Enhanced Cricket Knowledge"""
     
     def __init__(self):
-        self.openai_client = openai.OpenAI(api_key=settings.OPENAI_API_KEY) if settings.OPENAI_API_KEY else None
+        # Try to initialize OpenAI client
+        self.openai_client = None
+        if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY != "your_openai_api_key_here":
+            try:
+                self.openai_client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+            except:
+                self.openai_client = None
+        
+        # Enhanced cricket knowledge base
+        self.cricket_knowledge = {
+            "teams": {
+                "india": {
+                    "ranking": {"odi": 1, "t20": 2, "test": 1},
+                    "captain": "Rohit Sharma",
+                    "star_players": ["Virat Kohli", "Jasprit Bumrah", "KL Rahul", "Hardik Pandya"],
+                    "strengths": ["Strong batting lineup", "World-class bowling attack", "Excellent fielding"],
+                    "recent_form": "Excellent - won last 4 out of 5 matches",
+                    "home_advantage": "Very strong at home venues"
+                },
+                "australia": {
+                    "ranking": {"odi": 3, "t20": 4, "test": 2},
+                    "captain": "Pat Cummins",
+                    "star_players": ["Steve Smith", "David Warner", "Mitchell Starc", "Glenn Maxwell"],
+                    "strengths": ["Aggressive batting", "Pace bowling attack", "Strong mentality"],
+                    "recent_form": "Good - competitive in all formats",
+                    "home_advantage": "Exceptional at home, especially in WACA and MCG"
+                },
+                "england": {
+                    "ranking": {"odi": 4, "t20": 3, "test": 4},
+                    "captain": "Jos Buttler",
+                    "star_players": ["Joe Root", "Ben Stokes", "Jofra Archer", "Harry Brook"],
+                    "strengths": ["Innovative batting", "All-rounders", "Spin bowling"],
+                    "recent_form": "Mixed - rebuilding phase",
+                    "home_advantage": "Strong in English conditions"
+                },
+                "pakistan": {
+                    "ranking": {"odi": 5, "t20": 5, "test": 6},
+                    "captain": "Babar Azam",
+                    "star_players": ["Babar Azam", "Shaheen Afridi", "Mohammad Rizwan", "Shadab Khan"],
+                    "strengths": ["Unpredictable", "Fast bowling", "Fighting spirit"],
+                    "recent_form": "Inconsistent but dangerous",
+                    "home_advantage": "Very strong in UAE and home conditions"
+                }
+            },
+            "betting_tips": {
+                "live_betting": [
+                    "Watch for momentum shifts after wickets",
+                    "Consider weather conditions for total runs",
+                    "Monitor required run rate vs current rate",
+                    "Powerplay overs are crucial for team totals"
+                ],
+                "pre_match": [
+                    "Check recent head-to-head records",
+                    "Analyze pitch conditions and weather",
+                    "Consider team news and player availability",
+                    "Look at historical venue statistics"
+                ],
+                "general": [
+                    "Never bet more than you can afford to lose",
+                    "Set daily/weekly betting limits",
+                    "Take breaks between betting sessions",
+                    "Research thoroughly before placing bets"
+                ]
+            },
+            "cricket_facts": [
+                "The fastest delivery in cricket was 161.3 km/h by Shoaib Akhtar",
+                "Brian Lara holds the record for highest individual score: 400*",
+                "India has never lost a Test series at home to Australia since 2004",
+                "T20 cricket was invented to attract younger audiences to the sport",
+                "The Ashes series between England and Australia dates back to 1882"
+            ],
+            "platform_features": {
+                "wallet": "Manage your Happy Coins and INR balance easily",
+                "live_betting": "Bet on matches as they happen with real-time odds",
+                "casino": "Try cricket-themed slots and casino games",
+                "statistics": "Access detailed player and team statistics",
+                "predictions": "Get AI-powered match predictions and analysis"
+            }
+        }
+        
+        # Response templates for different types of queries
+        self.response_templates = {
+            "greeting": [
+                "Hello! I'm Mr. Happy, your cricket assistant! How can I help you with cricket or betting today?",
+                "Welcome to Happy Cricket! I'm here to help with match insights, betting tips, or any cricket questions!",
+                "Hi there! Ready to dive into some cricket action? What would you like to know?"
+            ],
+            "team_info": "Let me tell you about {team}. They're currently ranked #{ranking} in {format}. {additional_info}",
+            "betting_advice": "For betting on this match, consider: {tips}. Remember to bet responsibly!",
+            "match_prediction": "Based on current form and statistics, {prediction}. However, cricket is unpredictable!",
+            "wallet_help": "Your wallet shows {balance} Happy Coins. Need help with deposits or understanding our coin system?",
+            "responsible_gambling": "Remember to bet responsibly! Set limits, take breaks, and never bet more than you can afford to lose."
+        }
         self.cricket_context = """
         You are Mr. Happy, an expert cricket assistant for the Happy Cricket betting platform.
         
