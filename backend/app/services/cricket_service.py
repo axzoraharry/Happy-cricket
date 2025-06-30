@@ -4,18 +4,20 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import asyncio
 from ..core.config import settings
+from ..core.database import get_database
 
 class CricketService:
-    """Service to interact with EntitySport Cricket API"""
+    """Service to interact with EntitySport Cricket API and fallback to mock data"""
     
     def __init__(self):
         self.base_url = settings.ENTITYSPORT_BASE_URL
         self.access_key = settings.ENTITYSPORT_ACCESS_KEY
         self.secret_key = settings.ENTITYSPORT_SECRET_KEY
         self.token = settings.ENTITYSPORT_TOKEN
+        self.use_mock_data = False  # Will be set if API fails
         
     async def _make_request(self, endpoint: str, params: Dict = None) -> Dict[str, Any]:
-        """Make HTTP request to EntitySport API"""
+        """Make HTTP request to EntitySport API with fallback to mock data"""
         if params is None:
             params = {}
             
@@ -27,14 +29,149 @@ class CricketService:
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(url, params=params)
-                response.raise_for_status()
-                return response.json()
+                
+                # If unauthorized, try to refresh token
+                if response.status_code == 401:
+                    print("🔄 API token expired, attempting to refresh...")
+                    token_refreshed = await self._refresh_token()
+                    if token_refreshed:
+                        params['token'] = self.token
+                        response = await client.get(url, params=params)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('status') == 'ok':
+                        return data
+                    else:
+                        print(f"⚠️ API returned error: {data.get('message', 'Unknown error')}")
+                        # Fall back to mock data
+                        return await self._get_mock_data(endpoint, params)
+                else:
+                    print(f"⚠️ API request failed with status {response.status_code}")
+                    # Fall back to mock data  
+                    return await self._get_mock_data(endpoint, params)
+                    
             except httpx.HTTPError as e:
-                print(f"HTTP Error: {e}")
-                raise Exception(f"API request failed: {str(e)}")
+                print(f"⚠️ HTTP Error: {e}")
+                # Fall back to mock data
+                return await self._get_mock_data(endpoint, params)
             except Exception as e:
-                print(f"Unexpected error: {e}")
-                raise Exception(f"Unexpected error: {str(e)}")
+                print(f"⚠️ Unexpected error: {e}")
+                # Fall back to mock data
+                return await self._get_mock_data(endpoint, params)
+    
+    async def _refresh_token(self) -> bool:
+        """Try to refresh the EntitySport API token"""
+        try:
+            auth_url = f"{self.base_url}auth"
+            params = {
+                'access_key': self.access_key,
+                'secret_key': self.secret_key
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.get(auth_url, params=params)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('status') == 'ok':
+                        self.token = data.get('response', {}).get('token', '')
+                        print("✅ Token refreshed successfully")
+                        return True
+                        
+            print("❌ Failed to refresh token")
+            return False
+            
+        except Exception as e:
+            print(f"❌ Error refreshing token: {e}")
+            return False
+    
+    async def _get_mock_data(self, endpoint: str, params: Dict = None) -> Dict[str, Any]:
+        """Get mock data from database when API is unavailable"""
+        try:
+            db = await get_database()
+            
+            if endpoint == "matches":
+                collection = db["cricket_matches"]
+                
+                # Check for status filter
+                status = params.get('status') if params else None
+                query = {}
+                if status:
+                    query['status'] = status
+                
+                matches = []
+                async for match in collection.find(query).limit(50):
+                    # Remove MongoDB ObjectId
+                    match.pop('_id', None)
+                    matches.append(match)
+                
+                return {
+                    'status': 'ok',
+                    'response': {
+                        'items': matches,
+                        'total_items': len(matches)
+                    }
+                }
+            
+            elif endpoint == "competitions":
+                collection = db["cricket_competitions"]
+                competitions = []
+                async for comp in collection.find().limit(20):
+                    comp.pop('_id', None)
+                    competitions.append(comp)
+                
+                return {
+                    'status': 'ok',
+                    'response': {
+                        'items': competitions,
+                        'total_items': len(competitions)
+                    }
+                }
+            
+            elif endpoint == "teams":
+                collection = db["cricket_teams"]
+                teams = []
+                async for team in collection.find().limit(20):
+                    team.pop('_id', None)
+                    teams.append(team)
+                
+                return {
+                    'status': 'ok',
+                    'response': {
+                        'items': teams,
+                        'total_items': len(teams)
+                    }
+                }
+            
+            elif endpoint.startswith("matches/") and "/info" in endpoint:
+                # Get specific match info
+                match_id = endpoint.split('/')[1]
+                collection = db["cricket_matches"]
+                match = await collection.find_one({"match_id": match_id})
+                
+                if match:
+                    match.pop('_id', None)
+                    return {
+                        'status': 'ok',
+                        'response': match
+                    }
+            
+            # Default empty response
+            return {
+                'status': 'ok',
+                'response': {
+                    'items': [],
+                    'total_items': 0
+                }
+            }
+            
+        except Exception as e:
+            print(f"❌ Error getting mock data: {e}")
+            return {
+                'status': 'error',
+                'message': 'Failed to get mock data'
+            }
     
     async def update_token(self) -> Dict[str, Any]:
         """Update authentication token when expired"""
