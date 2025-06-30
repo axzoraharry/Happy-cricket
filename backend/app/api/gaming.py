@@ -7,19 +7,33 @@ from ..services.gaming_service import gaming_service
 
 router = APIRouter()
 
-@router.get("/games", response_model=List[Game])
+@router.get("/games")
 async def get_games(
     game_type: Optional[GameType] = None,
     current_user: UserResponse = Depends(get_current_user)
 ):
     """Get all available games"""
     try:
-        games = await gaming_service.get_games(game_type)
+        # Get raw game data from database instead of using service
+        from ..core.database import get_database
+        db = await get_database()
+        collection = db["games"]
+        
+        query = {"status": "active"}
+        if game_type:
+            query["game_type"] = game_type.value if hasattr(game_type, 'value') else str(game_type)
+        
+        games = []
+        async for game_doc in collection.find(query):
+            # Remove MongoDB ObjectId
+            game_doc.pop('_id', None)
+            games.append(game_doc)
+        
         return games
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to fetch games"
+            detail=f"Failed to fetch games: {str(e)}"
         )
 
 @router.get("/games/{game_id}")
