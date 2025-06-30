@@ -1,5 +1,3 @@
-<file>
-      <absolute_file_name>/app/backend/app/services/payment_service.py</absolute_file_name>
 import stripe
 import razorpay
 import hashlib
