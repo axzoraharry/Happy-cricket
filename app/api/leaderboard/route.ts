@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import { sql } from "@/lib/db"
 
 export async function GET(request: Request) {
   try {
@@ -8,21 +7,73 @@ export async function GET(request: Request) {
     const limit = Number.parseInt(searchParams.get("limit") || "100")
     const offset = Number.parseInt(searchParams.get("offset") || "0")
 
-    if (!tournamentId) {
-      return NextResponse.json({ error: "Tournament ID is required" }, { status: 400 })
-    }
+    // Mock leaderboard data
+    const mockLeaderboard = [
+      {
+        id: 1,
+        user_id: 1,
+        user_name: "Cricket Master",
+        team_id: 1,
+        team_name: "Super Kings",
+        points: 2850,
+        rank: 1,
+        prize_won: 50000
+      },
+      {
+        id: 2,
+        user_id: 2,
+        user_name: "Fantasy Pro",
+        team_id: 2,
+        team_name: "Royal Challengers",
+        points: 2650,
+        rank: 2,
+        prize_won: 25000
+      },
+      {
+        id: 3,
+        user_id: 3,
+        user_name: "Cricket Fan",
+        team_id: 3,
+        team_name: "Mumbai Warriors",
+        points: 2450,
+        rank: 3,
+        prize_won: 10000
+      },
+      {
+        id: 4,
+        user_id: 4,
+        user_name: "Team Builder",
+        team_id: 4,
+        team_name: "Delhi Capitals",
+        points: 2350,
+        rank: 4,
+        prize_won: 5000
+      },
+      {
+        id: 5,
+        user_id: 5,
+        user_name: "Fantasy Expert",
+        team_id: 5,
+        team_name: "Chennai Lions",
+        points: 2250,
+        rank: 5,
+        prize_won: 2500
+      }
+    ]
 
-    const leaderboard = await sql`
-      SELECT l.*, u.name as user_name, t.name as team_name
-      FROM leaderboard l
-      JOIN users u ON l.user_id = u.id
-      JOIN teams t ON l.team_id = t.id
-      WHERE l.tournament_id = ${tournamentId}
-      ORDER BY l.points DESC, l.rank ASC
-      LIMIT ${limit} OFFSET ${offset}
-    `
+    // Apply pagination
+    const paginatedLeaderboard = mockLeaderboard.slice(offset, offset + limit)
 
-    return NextResponse.json({ leaderboard })
+    return NextResponse.json({ 
+      leaderboard: paginatedLeaderboard,
+      pagination: {
+        total: mockLeaderboard.length,
+        limit,
+        offset,
+        pages: Math.ceil(mockLeaderboard.length / limit),
+        currentPage: Math.floor(offset / limit) + 1,
+      }
+    })
   } catch (error) {
     console.error("Error fetching leaderboard:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

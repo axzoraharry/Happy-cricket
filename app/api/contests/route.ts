@@ -1,7 +1,4 @@
 import { NextResponse } from "next/server"
-import { sql } from "@/lib/db"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 
 export async function GET(request: Request) {
   try {
@@ -10,39 +7,44 @@ export async function GET(request: Request) {
     const limit = Number.parseInt(searchParams.get("limit") || "10")
     const offset = Number.parseInt(searchParams.get("offset") || "0")
 
-    let query = sql`
-      SELECT c.*, 
-             COUNT(ct.team_id) as joined_teams
-      FROM contests c
-      LEFT JOIN contest_teams ct ON c.id = ct.contest_id
-    `
+    // Mock contests data
+    const mockContests = [
+      {
+        id: 1,
+        name: "IPL Mega Contest",
+        entry_fee: 100,
+        max_teams: 10000,
+        total_prize: 1000000,
+        joined_teams: 8500,
+        status: "upcoming",
+        match_id: 1,
+        start_time: new Date(Date.now() + 86400000).toISOString()
+      },
+      {
+        id: 2,
+        name: "T20 World Cup Special",
+        entry_fee: 500,
+        max_teams: 5000,
+        total_prize: 2500000,
+        joined_teams: 3200,
+        status: "upcoming",
+        match_id: 2,
+        start_time: new Date(Date.now() + 172800000).toISOString()
+      }
+    ]
 
-    if (matchId) {
-      query = sql`
-        ${query} 
-        WHERE c.match_id = ${matchId}
-      `
+    // Filter by matchId if provided
+    let filteredContests = mockContests
+    if (matchId && !isNaN(parseInt(matchId))) {
+      filteredContests = mockContests.filter(c => c.match_id === parseInt(matchId))
     }
 
-    query = sql`
-      ${query}
-      GROUP BY c.id
-      ORDER BY c.entry_fee ASC
-      LIMIT ${limit} OFFSET ${offset}
-    `
-
-    const contests = await query
-
-    // Get total count for pagination
-    const countResult = await sql`
-      SELECT COUNT(*) FROM contests
-      ${matchId ? sql`WHERE match_id = ${matchId}` : sql``}
-    `
-
-    const total = Number.parseInt(countResult[0].count)
+    // Apply pagination
+    const paginatedContests = filteredContests.slice(offset, offset + limit)
+    const total = filteredContests.length
 
     return NextResponse.json({
-      contests,
+      contests: paginatedContests,
       pagination: {
         total,
         limit,
@@ -59,13 +61,6 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const userId = session.user.id
     const { name, matchId, entryFee, maxTeams, totalPrize, isPrivate, description } = await request.json()
 
     // Validate input
@@ -73,22 +68,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    // Create contest
-    const result = await sql`
-      INSERT INTO contests (
-        name, match_id, entry_fee, max_teams, total_prize, 
-        is_private, description, creator_id, current_entries
-      )
-      VALUES (
-        ${name}, ${matchId}, ${entryFee || 0}, ${maxTeams}, ${totalPrize},
-        ${isPrivate || false}, ${description || null}, ${userId}, 0
-      )
-      RETURNING *
-    `
+    // Create mock contest
+    const newContest = {
+      id: Math.floor(Math.random() * 1000),
+      name,
+      match_id: matchId,
+      entry_fee: entryFee || 0,
+      max_teams: maxTeams,
+      total_prize: totalPrize,
+      is_private: isPrivate || false,
+      description: description || null,
+      joined_teams: 0,
+      status: "upcoming",
+      created_at: new Date().toISOString()
+    }
 
     return NextResponse.json(
       {
-        contest: result[0],
+        contest: newContest,
         message: "Contest created successfully",
       },
       { status: 201 },
