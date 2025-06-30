@@ -58,6 +58,10 @@ app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])
 app.include_router(voice_router, prefix="/api/voice", tags=["Voice Assistant"])
 app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
 
+# Import and include gaming router
+from app.api.gaming import router as gaming_router
+app.include_router(gaming_router, prefix="/api/gaming", tags=["Gaming"])
+
 # Health check endpoint
 @app.get("/api/health")
 async def health_check():
