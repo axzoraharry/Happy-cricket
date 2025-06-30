@@ -60,6 +60,7 @@ async def setup_gaming_system():
             ],
             "bonus_features": ["free_spins", "multiplier", "wild_symbols"],
             "is_active": True,
+            "status": "active",  # Add status field for compatibility
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
         },
