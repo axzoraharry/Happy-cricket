@@ -478,20 +478,31 @@ def test_stripe_payment_intent():
         "Authorization": f"Bearer {access_token}"
     }
     
+    # Updated to use a valid payment_method value from PaymentMethod enum
     payment_data = {
         "amount": 1000,
         "currency": "INR",
-        "payment_method": "card"
+        "payment_method": "stripe"  # Changed from "card" to "stripe" to match the enum
     }
     
     response = requests.post(url, json=payment_data, headers=headers)
     
     print_response(response)
     
-    # This might fail with test keys, so we'll check for either success or a specific error
-    if response.status_code == 400 and "Invalid API Key" in response.json().get("detail", ""):
-        print("Stripe API returned Invalid API Key, which is expected with test credentials")
+    # Check for success with production keys
+    if response.status_code == 200:
+        print("Stripe payment intent created successfully with production keys")
         return True
+    
+    # Check for specific errors
+    if response.status_code == 400:
+        error_detail = response.json().get("detail", "")
+        print(f"Stripe error: {error_detail}")
+        
+        # If it's a validation error related to payment_method, we'll consider it a known issue
+        if "payment_method" in error_detail:
+            print("Known issue: payment_method validation error")
+            return False
     
     assert response.status_code == 200 or response.status_code == 400, "Create Stripe payment intent failed unexpectedly"
     
