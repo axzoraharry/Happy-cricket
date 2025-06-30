@@ -269,7 +269,7 @@ class CricketService:
         if args is None:
             args = {}
         args['status'] = '1'  # Upcoming matches
-        return await self.get_matches(args=args)
+        return await self._make_request("matches", args)
     
     async def get_match_scorecard(self, match_id: str, args: Dict = None) -> Dict[str, Any]:
         """Get match scorecard"""
