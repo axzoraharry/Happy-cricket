@@ -113,6 +113,7 @@ async def setup_gaming_system():
                 {"name": "cricket_score", "payout": 10.0, "description": "Cricket-like scores (4, 6, 11, 12)"}
             ],
             "is_active": True,
+            "status": "active",  # Add status field for compatibility
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
         },
