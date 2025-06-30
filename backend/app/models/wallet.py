@@ -65,7 +65,7 @@ class Transaction(TransactionBase):
 
 class DepositRequest(BaseModel):
     amount: float
-    payment_method: PaymentMethod
+    payment_method: str = "stripe"  # Allow any string value
     currency: str = "INR"
     
     @validator('amount')
