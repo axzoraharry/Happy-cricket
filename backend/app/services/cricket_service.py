@@ -89,7 +89,16 @@ class CricketService:
     async def _get_mock_data(self, endpoint: str, params: Dict = None) -> Dict[str, Any]:
         """Get mock data from database when API is unavailable"""
         try:
-            db = await get_database()
+            # Ensure database connection
+            from ..core.database import connect_to_mongo
+            try:
+                db = await get_database()
+                if db is None:
+                    await connect_to_mongo()
+                    db = await get_database()
+            except:
+                await connect_to_mongo()
+                db = await get_database()
             
             if endpoint == "matches":
                 collection = db["cricket_matches"]
