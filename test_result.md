@@ -209,7 +209,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Payment API (Stripe)"
     - "Gaming API"
   stuck_tasks:
     - "Gaming API"
