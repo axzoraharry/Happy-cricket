@@ -5,6 +5,10 @@ import sys
 import os
 sys.path.append('/app/backend')
 
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv('/app/backend/.env')
+
 from datetime import datetime, timedelta
 import json
 from app.core.database import connect_to_mongo, get_database
