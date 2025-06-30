@@ -56,6 +56,7 @@ app.include_router(cricket_router, prefix="/api/cricket", tags=["Cricket Data"])
 app.include_router(betting_router, prefix="/api/betting", tags=["Betting"])
 app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])
 app.include_router(voice_router, prefix="/api/voice", tags=["Voice Assistant"])
+app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
 
 # Health check endpoint
 @app.get("/api/health")
