@@ -1,10 +1,22 @@
 import { neon } from "@neondatabase/serverless"
 
-// Mock database for testing when DATABASE_URL is not available
-const mockDatabase = {
-  users: [] as any[],
-  nextId: 1
+// Global mock database that persists across module reloads
+declare global {
+  var mockDatabase: {
+    users: any[]
+    nextId: number
+  } | undefined
 }
+
+// Initialize mock database
+if (!global.mockDatabase) {
+  global.mockDatabase = {
+    users: [],
+    nextId: 1
+  }
+}
+
+const mockDatabase = global.mockDatabase
 
 // Mock SQL template function
 const mockSql = (strings: TemplateStringsArray, ...values: any[]) => {
