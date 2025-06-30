@@ -16,6 +16,7 @@ from app.api.cricket import router as cricket_router
 from app.api.betting import router as betting_router
 from app.api.admin import router as admin_router
 from app.api.voice import router as voice_router
+from app.api.payments import router as payments_router
 
 # Import database connection
 from app.core.database import connect_to_mongo, close_mongo_connection
