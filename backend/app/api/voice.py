@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
 from fastapi.responses import Response
 from typing import Optional
+from pydantic import BaseModel
 from ..models.user import UserResponse
 from ..api.auth import get_current_user
 from ..services.ai_assistant_service import ai_assistant
@@ -8,23 +9,29 @@ import base64
 
 router = APIRouter()
 
+class ChatMessage(BaseModel):
+    message: str
+    session_id: Optional[str] = None
+
 @router.post("/chat")
 async def voice_chat(
-    message: str = Form(...),
+    chat_data: ChatMessage,
     current_user: UserResponse = Depends(get_current_user)
 ):
     """Process voice/text chat with Mr. Happy assistant"""
     try:
         # Process the message with AI
-        response = await ai_assistant.process_voice_query(
-            transcript=message,
-            user=current_user
+        response = await ai_assistant.process_chat_message(
+            message=chat_data.message,
+            user=current_user,
+            session_id=chat_data.session_id
         )
         
         return {
             "response": response,
-            "user_message": message,
-            "timestamp": "2024-01-01T00:00:00Z"
+            "user_message": chat_data.message,
+            "timestamp": "2024-01-01T00:00:00Z",
+            "session_id": chat_data.session_id
         }
         
     except Exception as e:
