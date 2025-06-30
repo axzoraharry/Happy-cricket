@@ -111,8 +111,13 @@ class CricketService:
                 
                 matches = []
                 async for match in collection.find(query).limit(50):
-                    # Remove MongoDB ObjectId
+                    # Remove MongoDB ObjectId and convert datetime objects
                     match.pop('_id', None)
+                    # Convert datetime strings to ensure JSON serialization
+                    if 'created_at' in match and isinstance(match['created_at'], str):
+                        match['created_at'] = match['created_at']
+                    if 'updated_at' in match and isinstance(match['updated_at'], str):
+                        match['updated_at'] = match['updated_at']
                     matches.append(match)
                 
                 return {
