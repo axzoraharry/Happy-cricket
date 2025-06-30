@@ -15,7 +15,7 @@ try:
                 break
 except Exception as e:
     print(f"Error reading REACT_APP_BACKEND_URL from frontend/.env: {str(e)}")
-    BACKEND_URL = "https://d62d8328-1395-4890-9a93-2415813b4345.preview.emergentagent.com"
+    BACKEND_URL = "https://3ba710e2-8486-4cb0-bb81-5d19db756f07.preview.emergentagent.com"
 
 print(f"Using backend URL: {BACKEND_URL}")
 
