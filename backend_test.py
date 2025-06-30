@@ -527,10 +527,15 @@ def test_razorpay_order():
     
     print_response(response)
     
-    # This might fail with test keys, so we'll check for either success or a specific error
-    if response.status_code == 400 and "Invalid API Key" in response.json().get("detail", ""):
-        print("Razorpay API returned Invalid API Key, which is expected with test credentials")
+    # Check for success with production keys
+    if response.status_code == 200:
+        print("Razorpay order created successfully with production keys")
         return True
+    
+    # Check for specific errors
+    if response.status_code == 400:
+        error_detail = response.json().get("detail", "")
+        print(f"Razorpay error: {error_detail}")
     
     assert response.status_code == 200 or response.status_code == 400, "Create Razorpay order failed unexpectedly"
     
