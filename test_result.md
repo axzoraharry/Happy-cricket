@@ -131,15 +131,18 @@ backend:
 frontend:
   - task: "User Authentication UI"
     implemented: true
-    working: "NA"
-    file: "/app/frontend/src/pages/Auth.js"
-    stuck_count: 0
+    working: false
+    file: "/app/frontend/src/pages/Login.js"
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Authentication UI implemented but not tested yet"
+      - working: false
+        agent: "testing"
+        comment: "Authentication UI is implemented but login functionality is not working. The login form is displayed correctly, but login attempts result in 401 Unauthorized errors. The backend logs show multiple 401 errors for login attempts."
 
   - task: "Wallet Management UI"
     implemented: true
@@ -152,6 +155,9 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Wallet UI implemented but not tested yet"
+      - working: "NA"
+        agent: "testing"
+        comment: "Unable to test Wallet UI as authentication is not working. The Wallet component code looks properly implemented but could not be accessed due to authentication issues."
 
   - task: "Cricket Betting UI"
     implemented: true
@@ -164,6 +170,9 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Cricket betting UI implemented but not tested yet"
+      - working: "NA"
+        agent: "testing"
+        comment: "Unable to test Betting UI as authentication is not working. The Betting component code looks properly implemented but could not be accessed due to authentication issues."
 
   - task: "Payment Processing UI"
     implemented: true
@@ -176,11 +185,14 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Payment UI implemented but not tested yet"
+      - working: "NA"
+        agent: "testing"
+        comment: "Unable to test Payment UI as authentication is not working. Could not access the payment functionality due to authentication issues."
 
   - task: "Voice Assistant UI"
     implemented: true
     working: "NA"
-    file: "/app/frontend/src/components/VoiceAssistant"
+    file: "/app/frontend/src/components/VoiceAssistant/VoiceAssistant.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
@@ -188,6 +200,9 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Voice assistant UI implemented but not tested yet"
+      - working: "NA"
+        agent: "testing"
+        comment: "Unable to test Voice Assistant UI as authentication is not working. The Voice Assistant component code looks properly implemented but could not be accessed due to authentication issues."
 
   - task: "Gaming UI"
     implemented: true
@@ -200,6 +215,9 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Gaming UI implemented but not tested yet"
+      - working: "NA"
+        agent: "testing"
+        comment: "Unable to test Gaming UI as authentication is not working. Additionally, the Gaming component could not be found in the codebase, which suggests it might not be fully implemented yet."
 
 metadata:
   created_by: "main_agent"
