@@ -394,14 +394,15 @@ def test_voice_chat():
     url = f"{BACKEND_URL}/api/voice/chat"
     
     headers = {
-        "Authorization": f"Bearer {access_token}"
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
     }
     
     data = {
         "message": "Check my balance"
     }
     
-    response = requests.post(url, data=data, headers=headers)
+    response = requests.post(url, json=data, headers=headers)
     
     print_response(response)
     
