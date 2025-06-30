@@ -180,6 +180,7 @@ async def setup_gaming_system():
                 {"name": "wicket_numbers", "numbers": [1, 2, 3, 8, 9, 10], "payout": 5.0}
             ],
             "is_active": True,
+            "status": "active",  # Add status field for compatibility
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
         },
