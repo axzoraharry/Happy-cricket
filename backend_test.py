@@ -76,13 +76,8 @@ def test_user_registration():
     print_response(response)
     
     # If user already exists, we'll get a 400 error
-    if response.status_code == 400 and "already exists" in response.json().get("detail", ""):
-        print("User already exists, proceeding with login")
-        return True
-    
-    # Sometimes the error message is empty, but the status code is 400
     if response.status_code == 400:
-        print("User registration failed, likely because user already exists. Proceeding with login.")
+        print("User registration failed with 400 error. Proceeding with login.")
         return True
     
     assert response.status_code == 200, "User registration failed"
