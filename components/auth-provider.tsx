@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check if user is logged in
     const checkAuth = async () => {
       try {
-        // In a real app, this would check session/token validity
+        // Check for stored user data
         const storedUser = localStorage.getItem("user")
         if (storedUser) {
           setUser(JSON.parse(storedUser))
@@ -46,17 +46,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true)
-      // In a real app, this would make an API call to authenticate
-      // Simulating authentication
-      const mockUser: User = {
-        id: "user-1",
-        name: "Cricket Fan",
-        email: email,
+      
+      // Make API call to authenticate
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed')
       }
 
-      // Store user in localStorage (in a real app, you'd store a token)
-      localStorage.setItem("user", JSON.stringify(mockUser))
-      setUser(mockUser)
+      const userData: User = {
+        id: data.user.id.toString(),
+        name: data.user.name,
+        email: data.user.email,
+      }
+
+      // Store user in localStorage
+      localStorage.setItem("user", JSON.stringify(userData))
+      setUser(userData)
     } catch (error) {
       console.error("Sign in error:", error)
       throw error
