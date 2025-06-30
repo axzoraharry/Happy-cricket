@@ -884,6 +884,49 @@ def run_all_tests():
     
     return all_passed
 
+def run_focused_tests():
+    """Run only the tests that need retesting based on test_result.md"""
+    print("\n" + "="*80)
+    print(f"STARTING FOCUSED HAPPY CRICKET BACKEND API TESTS AT {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("="*80 + "\n")
+    
+    # Test authentication first to get tokens
+    test_user_registration()
+    test_user_login()
+    
+    # Test Payment APIs with production keys
+    print("\nTesting Payment APIs with production keys:")
+    stripe_result = test_stripe_payment_intent()
+    razorpay_result = test_razorpay_order()
+    
+    # Test Gaming API
+    print("\nTesting Gaming API:")
+    games_result = test_get_games()
+    game_session_result = test_start_game_session()
+    
+    # Print summary
+    print("\n" + "="*80)
+    print("FOCUSED TEST RESULTS SUMMARY")
+    print("="*80)
+    
+    print(f"Stripe Payment API: {'PASS' if stripe_result else 'FAIL'}")
+    print(f"Razorpay Payment API: {'PASS' if razorpay_result else 'FAIL'}")
+    print(f"Gaming API - Get Games: {'PASS' if games_result else 'FAIL'}")
+    print(f"Gaming API - Start Game Session: {'PASS' if game_session_result else 'FAIL'}")
+    
+    print("\n" + "="*80)
+    all_passed = stripe_result and razorpay_result and games_result and game_session_result
+    if all_passed:
+        print("ALL FOCUSED TESTS PASSED SUCCESSFULLY!")
+    else:
+        print("SOME FOCUSED TESTS FAILED. CHECK THE LOGS FOR DETAILS.")
+    print("="*80 + "\n")
+    
+    return all_passed
+
 if __name__ == "__main__":
-    success = run_all_tests()
+    if len(sys.argv) > 1 and sys.argv[1] == "--focused":
+        success = run_focused_tests()
+    else:
+        success = run_all_tests()
     sys.exit(0 if success else 1)
