@@ -227,9 +227,11 @@ metadata:
 
 test_plan:
   current_focus:
+    - "User Authentication UI"
     - "Gaming API"
   stuck_tasks:
     - "Gaming API"
+    - "User Authentication UI"
   test_all: false
   test_priority: "high_first"
 
