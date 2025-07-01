@@ -100,12 +100,16 @@ export function LiveScore({ matchId }: LiveScoreProps) {
     )
   }
 
-  if (!liveData) {
+  if (!liveData || liveData.status === 'no_live_matches') {
     return (
       <Card>
         <CardContent className="p-6 text-center">
           <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No live data available</p>
+          <h3 className="text-lg font-semibold mb-2">No Live Matches Currently</h3>
+          <p className="text-muted-foreground mb-4">Check back when matches are in progress for live scoring</p>
+          <Button asChild>
+            <Link href="/matches">View Upcoming Matches</Link>
+          </Button>
         </CardContent>
       </Card>
     )
