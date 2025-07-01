@@ -72,155 +72,78 @@ export default function CreateTeamPage() {
     }
   }
 
-  const handleSelectPlayer = (player: any) => {
-    // Check if player is already selected
-    if (selectedPlayers.some((p) => p.id === player.id)) {
-      // Remove player
-      setSelectedPlayers(selectedPlayers.filter((p) => p.id !== player.id))
-      setCredits(credits + player.price)
+  const filteredPlayers = players.filter(player => {
+    const matchesSearch = player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         player.team.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesRole = activeRole === "all" || player.role.toLowerCase().includes(activeRole.toLowerCase())
+    return matchesSearch && matchesRole
+  })
 
-      // If player was captain or vice-captain, reset those
-      if (captain === player.id) setCaptain(null)
-      if (viceCaptain === player.id) setViceCaptain(null)
+  const addPlayer = (player) => {
+    if (selectedPlayers.length >= 11) {
+      toast({ title: "Team Full", description: "You can only select 11 players", variant: "destructive" })
+      return
+    }
+
+    const totalCredits = selectedPlayers.reduce((sum, p) => sum + p.credits, 0)
+    if (totalCredits + player.credits > budget) {
+      toast({ title: "Budget Exceeded", description: "Not enough credits to add this player", variant: "destructive" })
+      return
+    }
+
+    if (selectedPlayers.find(p => p.id === player.id)) {
+      toast({ title: "Player Already Selected", description: "This player is already in your team", variant: "destructive" })
+      return
+    }
+
+    // Check team balance (max 7 from one team)
+    const teamACount = selectedPlayers.filter(p => p.team === match?.team_a).length
+    const teamBCount = selectedPlayers.filter(p => p.team === match?.team_b).length
+    
+    if (player.team === match?.team_a && teamACount >= 7) {
+      toast({ title: "Team Limit", description: `Maximum 7 players from ${match?.team_a}`, variant: "destructive" })
+      return
+    }
+    
+    if (player.team === match?.team_b && teamBCount >= 7) {
+      toast({ title: "Team Limit", description: `Maximum 7 players from ${match?.team_b}`, variant: "destructive" })
+      return
+    }
+
+    setSelectedPlayers([...selectedPlayers, player])
+    toast({ title: "Player Added", description: `${player.name} added to your team` })
+  }
+
+  const removePlayer = (playerId) => {
+    setSelectedPlayers(selectedPlayers.filter(p => p.id !== playerId))
+    if (captain?.id === playerId) setCaptain(null)
+    if (viceCaptain?.id === playerId) setViceCaptain(null)
+  }
+
+  const setCaptaincy = (player, role) => {
+    if (role === 'captain') {
+      if (viceCaptain?.id === player.id) setViceCaptain(null)
+      setCaptain(player)
     } else {
-      // Check team constraints
-      if (selectedPlayers.length >= 11) {
-        toast({
-          title: "Team Full",
-          description: "You can only select 11 players",
-          variant: "destructive",
-        })
-        return
-      }
-
-      // Check role constraints
-      const roleCount = {
-        WK: selectedPlayers.filter((p) => p.role === "WK").length,
-        BAT: selectedPlayers.filter((p) => p.role === "BAT").length,
-        AR: selectedPlayers.filter((p) => p.role === "AR").length,
-        BOWL: selectedPlayers.filter((p) => p.role === "BOWL").length,
-      }
-
-      if (player.role === "WK" && roleCount.WK >= 4) {
-        toast({
-          title: "Too Many Wicket-keepers",
-          description: "You can select at most 4 wicket-keepers",
-          variant: "destructive",
-        })
-        return
-      }
-
-      if (player.role === "BAT" && roleCount.BAT >= 6) {
-        toast({
-          title: "Too Many Batsmen",
-          description: "You can select at most 6 batsmen",
-          variant: "destructive",
-        })
-        return
-      }
-
-      if (player.role === "AR" && roleCount.AR >= 4) {
-        toast({
-          title: "Too Many All-rounders",
-          description: "You can select at most 4 all-rounders",
-          variant: "destructive",
-        })
-        return
-      }
-
-      if (player.role === "BOWL" && roleCount.BOWL >= 6) {
-        toast({
-          title: "Too Many Bowlers",
-          description: "You can select at most 6 bowlers",
-          variant: "destructive",
-        })
-        return
-      }
-
-      // Check credit constraint
-      if (credits < player.price) {
-        toast({
-          title: "Not Enough Credits",
-          description: "You don't have enough credits to select this player",
-          variant: "destructive",
-        })
-        return
-      }
-
-      // Add player
-      setSelectedPlayers([...selectedPlayers, player])
-      setCredits(credits - player.price)
+      if (captain?.id === player.id) setCaptain(null)
+      setViceCaptain(player)
     }
   }
 
-  const handleSetCaptain = (playerId: string) => {
-    if (captain === playerId) {
-      setCaptain(null)
-    } else {
-      setCaptain(playerId)
-      // If this player was vice-captain, reset vice-captain
-      if (viceCaptain === playerId) {
-        setViceCaptain(null)
-      }
-    }
-  }
+  const usedCredits = selectedPlayers.reduce((sum, p) => sum + p.credits, 0)
+  const remainingCredits = budget - usedCredits
 
-  const handleSetViceCaptain = (playerId: string) => {
-    if (viceCaptain === playerId) {
-      setViceCaptain(null)
-    } else {
-      setViceCaptain(playerId)
-      // If this player was captain, reset captain
-      if (captain === playerId) {
-        setCaptain(null)
-      }
-    }
-  }
+  const canSaveTeam = selectedPlayers.length === 11 && captain && viceCaptain
 
-  const handleCreateTeam = () => {
-    if (!teamName) {
-      toast({
-        title: "Team Name Required",
-        description: "Please enter a name for your team",
-        variant: "destructive",
-      })
+  const saveTeam = () => {
+    if (!canSaveTeam) {
+      toast({ title: "Incomplete Team", description: "Please select 11 players, captain, and vice-captain", variant: "destructive" })
       return
     }
 
-    if (selectedPlayers.length !== 11) {
-      toast({
-        title: "Incomplete Team",
-        description: "You must select exactly 11 players",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!captain) {
-      toast({
-        title: "Captain Required",
-        description: "Please select a captain for your team",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!viceCaptain) {
-      toast({
-        title: "Vice-Captain Required",
-        description: "Please select a vice-captain for your team",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // In a real app, this would make an API call to save the team
-    toast({
-      title: "Team Created",
-      description: "Your team has been created successfully",
-    })
-
-    router.push("/my-teams")
+    // Save team logic here
+    toast({ title: "Team Saved!", description: "Your team has been saved successfully" })
+    router.push(`/matches/${matchId}/contests`)
   }
 
   if (loading || !user) {
