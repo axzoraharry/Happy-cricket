@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 
 class CricketFantasyAPITester:
-    def __init__(self, base_url="http://localhost:3001"):
+    def __init__(self, base_url="http://localhost:3000"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
