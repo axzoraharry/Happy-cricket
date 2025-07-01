@@ -71,6 +71,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Store user in localStorage
       localStorage.setItem("user", JSON.stringify(userData))
       setUser(userData)
+      
+      // Redirect to dashboard after successful login
+      if (typeof window !== 'undefined') {
+        window.location.href = '/dashboard'
+      }
     } catch (error) {
       console.error("Sign in error:", error)
       throw error
