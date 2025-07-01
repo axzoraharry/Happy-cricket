@@ -15,77 +15,27 @@ export default function ContestsPage() {
   const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
-    // In a real app, this would fetch from an API
     const fetchContests = async () => {
       try {
-        // Simulating API call with mock data
-        setTimeout(() => {
-          setContests([
-            {
-              id: 1,
-              name: "IPL Mega Contest",
-              entryFee: 100,
-              totalTeams: 10000,
-              joinedTeams: 8500,
-              prizePool: 1000000,
-              status: "upcoming",
-              startTime: new Date(Date.now() + 86400000), // tomorrow
-            },
-            {
-              id: 2,
-              name: "T20 World Cup Special",
-              entryFee: 500,
-              totalTeams: 5000,
-              joinedTeams: 3200,
-              prizePool: 2500000,
-              status: "upcoming",
-              startTime: new Date(Date.now() + 172800000), // day after tomorrow
-            },
-            {
-              id: 3,
-              name: "Test Match Challenge",
-              entryFee: 50,
-              totalTeams: 20000,
-              joinedTeams: 15000,
-              prizePool: 1000000,
-              status: "upcoming",
-              startTime: new Date(Date.now() + 259200000), // 3 days from now
-            },
-            {
-              id: 4,
-              name: "ODI Series Contest",
-              entryFee: 200,
-              totalTeams: 8000,
-              joinedTeams: 6000,
-              prizePool: 1600000,
-              status: "upcoming",
-              startTime: new Date(Date.now() + 345600000), // 4 days from now
-            },
-            {
-              id: 5,
-              name: "Free Entry Contest",
-              entryFee: 0,
-              totalTeams: 50000,
-              joinedTeams: 42000,
-              prizePool: 100000,
-              status: "upcoming",
-              startTime: new Date(Date.now() + 432000000), // 5 days from now
-            },
-            {
-              id: 6,
-              name: "High Stakes Contest",
-              entryFee: 1000,
-              totalTeams: 2000,
-              joinedTeams: 1200,
-              prizePool: 2000000,
-              status: "upcoming",
-              startTime: new Date(Date.now() + 518400000), // 6 days from now
-            },
-          ])
-          setIsLoading(false)
-        }, 1000)
+        const response = await fetch('/api/contests')
+        const data = await response.json()
+        setContests(data.contests || [])
+        setIsLoading(false)
       } catch (error) {
         console.error("Error fetching contests:", error)
+        // Fallback to mock data
+        setContests([
+          {
+            id: 1,
+            name: "IPL Mega Contest",
+            entryFee: 100,
+            totalTeams: 10000,
+            joinedTeams: 8500,
+            prizePool: 1000000,
+            status: "upcoming",
+            startTime: new Date(Date.now() + 86400000), // tomorrow
+          },
+        ])
         setIsLoading(false)
       }
     }
