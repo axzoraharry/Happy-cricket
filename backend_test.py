@@ -161,7 +161,7 @@ class CricketFantasyAPITester:
 
 def main():
     # Setup
-    tester = CricketFantasyAPITester("http://localhost:3001")
+    tester = CricketFantasyAPITester("http://localhost:3000")
     
     # Run tests
     print("\n===== CRICKET FANTASY LEAGUE API TESTS =====\n")
