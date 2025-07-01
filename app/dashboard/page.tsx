@@ -1,15 +1,16 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
-
-import { useEffect, useState } from "react"
-import Link from "next/link"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Trophy, Users, BarChart3, Calendar, Clock, ArrowRight } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { CalendarDays, Trophy, Users, TrendingUp, Star, Clock, Zap, DollarSign } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { formatDistanceToNow } from "date-fns"
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
