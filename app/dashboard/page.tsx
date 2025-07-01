@@ -38,70 +38,51 @@ export default function DashboardPage() {
   }, [user, loading, router])
 
   useEffect(() => {
-    // In a real app, this would fetch from an API
-    const fetchData = async () => {
-      try {
-        // Simulating API calls with mock data
-        setTimeout(() => {
-          setTeams([
-            { id: 1, name: "Super Kings", totalPoints: 450, rank: 2 },
-            { id: 2, name: "Royal Challengers", totalPoints: 380, rank: 5 },
-          ])
-
-          setContests([
-            {
-              id: 1,
-              name: "IPL Mega Contest",
-              entryFee: 100,
-              totalTeams: 10000,
-              prizePool: 1000000,
-              joinedTeams: 8500,
-              status: "upcoming",
-              startTime: new Date(Date.now() + 86400000), // tomorrow
-            },
-            {
-              id: 2,
-              name: "T20 World Cup Special",
-              entryFee: 500,
-              totalTeams: 5000,
-              prizePool: 2500000,
-              joinedTeams: 3200,
-              status: "upcoming",
-              startTime: new Date(Date.now() + 172800000), // day after tomorrow
-            },
-          ])
-
-          setUpcomingMatches([
-            {
-              id: 1,
-              teamA: "India",
-              teamB: "Australia",
-              venue: "Melbourne Cricket Ground",
-              matchDate: new Date(Date.now() + 86400000), // tomorrow
-              matchType: "T20",
-            },
-            {
-              id: 2,
-              teamA: "England",
-              teamB: "South Africa",
-              venue: "Lord's Cricket Ground",
-              matchDate: new Date(Date.now() + 172800000), // day after tomorrow
-              matchType: "ODI",
-            },
-          ])
-
-          setIsLoading(false)
-        }, 1000)
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error)
-        setIsLoading(false)
-      }
-    }
-
     if (user) {
-      fetchData()
+      fetchDashboardData()
     }
   }, [user])
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch all dashboard data in parallel
+      const [matchesRes, teamsRes, contestsRes, leaderboardRes] = await Promise.all([
+        fetch('/api/matches'),
+        fetch('/api/teams'),
+        fetch('/api/contests'),
+        fetch('/api/leaderboard')
+      ])
+
+      const [matchesData, teamsData, contestsData, leaderboardData] = await Promise.all([
+        matchesRes.json(),
+        teamsRes.json(),
+        contestsRes.json(),
+        leaderboardRes.json()
+      ])
+
+      // Generate user stats
+      const userStats = {
+        totalPoints: 1547,
+        rank: 42,
+        teamsCreated: teamsData.teams?.length || 0,
+        contestsJoined: 8,
+        totalWinnings: 2500
+      }
+
+      setDashboardData({
+        matches: matchesData.matches || [],
+        teams: teamsData.teams || [],
+        contests: contestsData.contests || [],
+        leaderboard: leaderboardData.leaderboard || [],
+        userStats
+      })
+      
+      setDataLoading(false)
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error)
+      setDataLoading(false)
+    }
+  }
 
   if (loading || !user) {
     return (
