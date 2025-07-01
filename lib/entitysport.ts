@@ -43,19 +43,22 @@ class EntitySportAPI {
       url.searchParams.append(key, params[key])
     })
 
-    console.log('EntitySport API Request:', url.toString())
+    console.log('EntitySport API Request:', url.toString().replace(this.token, '***TOKEN***'))
 
     try {
       const response = await fetch(url.toString())
       
       if (!response.ok) {
-        throw new Error(`EntitySport API error: ${response.status} ${response.statusText}`)
+        const errorText = await response.text()
+        console.error(`EntitySport API Error Response:`, errorText)
+        throw new Error(`EntitySport API error: ${response.status} ${response.statusText} - ${errorText}`)
       }
 
       const data = await response.json()
       
-      if (data.status !== 'ok') {
-        throw new Error(`EntitySport API error: ${data.message || 'Unknown error'}`)
+      if (data.status !== 'ok' && data.status !== 'success') {
+        console.error(`EntitySport API Error Data:`, data)
+        throw new Error(`EntitySport API error: ${data.message || data.response || 'Unknown error'}`)
       }
 
       return data
