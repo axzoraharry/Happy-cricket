@@ -148,239 +148,238 @@ export default function DashboardPage() {
           </div>
         </div>
 
-      <Tabs defaultValue="teams" className="mt-8">
-        <TabsList className="grid w-full md:w-auto grid-cols-3">
-          <TabsTrigger value="teams">My Teams</TabsTrigger>
-          <TabsTrigger value="contests">My Contests</TabsTrigger>
-          <TabsTrigger value="upcoming">Upcoming Matches</TabsTrigger>
-        </TabsList>
+        {/* Main Content */}
+        <Tabs defaultValue="matches" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="matches">Upcoming Matches</TabsTrigger>
+            <TabsTrigger value="teams">My Teams</TabsTrigger>
+            <TabsTrigger value="contests">My Contests</TabsTrigger>
+            <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="teams" className="mt-6">
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[1, 2].map((i) => (
-                <Card key={i} className="overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="p-6 flex flex-col gap-4">
-                      <div className="h-6 w-32 bg-muted animate-pulse rounded-md"></div>
-                      <div className="h-4 w-48 bg-muted animate-pulse rounded-md"></div>
-                      <div className="h-4 w-24 bg-muted animate-pulse rounded-md"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          {/* Upcoming Matches Tab */}
+          <TabsContent value="matches" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Upcoming Matches</h2>
+              <Button asChild>
+                <Link href="/matches">View All</Link>
+              </Button>
             </div>
-          ) : teams.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {teams.map((team) => (
-                <Card key={team.id}>
-                  <CardHeader>
-                    <CardTitle>{team.name}</CardTitle>
-                    <CardDescription>Rank #{team.rank}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total Points</p>
-                        <p className="text-xl font-bold">{team.totalPoints}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Players</p>
-                        <p className="text-xl font-bold">11</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Captain</p>
-                        <p className="text-xl font-bold">V. Kohli</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Button variant="outline" asChild>
-                      <Link href={`/my-teams/${team.id}`}>View Team</Link>
-                    </Button>
-                    <Button variant="outline" asChild>
-                      <Link href={`/my-teams/${team.id}/edit`}>Edit Team</Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>No Teams Found</CardTitle>
-                <CardDescription>You haven't created any teams yet.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Create your first team to participate in contests and win exciting prizes.
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button asChild>
-                  <Link href="/matches">Create Team</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          )}
-        </TabsContent>
 
-        <TabsContent value="contests" className="mt-6">
-          {isLoading ? (
-            <div className="grid grid-cols-1 gap-6">
-              {[1, 2].map((i) => (
-                <Card key={i} className="overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="p-6 flex flex-col gap-4">
-                      <div className="h-6 w-32 bg-muted animate-pulse rounded-md"></div>
-                      <div className="h-4 w-48 bg-muted animate-pulse rounded-md"></div>
-                      <div className="h-4 w-24 bg-muted animate-pulse rounded-md"></div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {dashboardData.matches.slice(0, 6).map((match) => (
+                <Card key={match.id} className="hover:shadow-lg transition-all group">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <Badge variant="outline">{match.match_type}</Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        {formatDistanceToNow(new Date(match.match_date), { addSuffix: true })}
+                      </Badge>
                     </div>
+
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="text-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full flex items-center justify-center mb-2">
+                          <span className="text-sm font-semibold">{match.team_a.substring(0, 3).toUpperCase()}</span>
+                        </div>
+                        <p className="text-sm font-medium">{match.team_a}</p>
+                      </div>
+
+                      <div className="text-center">
+                        <span className="text-xl font-bold text-primary">VS</span>
+                      </div>
+
+                      <div className="text-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full flex items-center justify-center mb-2">
+                          <span className="text-sm font-semibold">{match.team_b.substring(0, 3).toUpperCase()}</span>
+                        </div>
+                        <p className="text-sm font-medium">{match.team_b}</p>
+                      </div>
+                    </div>
+
+                    <div className="text-center mb-4">
+                      <p className="text-sm text-muted-foreground mb-1">📍 {match.venue}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(match.match_date).toLocaleDateString()} • {new Date(match.match_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+
+                    <Button asChild className="w-full">
+                      <Link href={`/matches/${match.id}/create-team`}>
+                        Create Team
+                      </Link>
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
             </div>
-          ) : contests.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6">
-              {contests.map((contest) => (
-                <Card key={contest.id}>
-                  <CardHeader>
+          </TabsContent>
+
+          {/* My Teams Tab */}
+          <TabsContent value="teams" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">My Teams</h2>
+              <Button asChild>
+                <Link href="/matches">Create New Team</Link>
+              </Button>
+            </div>
+
+            {dashboardData.teams.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {dashboardData.teams.map((team) => (
+                  <Card key={team.id} className="hover:shadow-lg transition-all">
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">{team.name}</CardTitle>
+                          <CardDescription>Points: {team.total_points}</CardDescription>
+                        </div>
+                        <Badge variant={team.rank <= 3 ? "default" : "secondary"}>
+                          Rank #{team.rank}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Players:</span>
+                          <span>{team.player_count}/11</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Budget Used:</span>
+                          <span>₹{(10000 - team.budget).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Created:</span>
+                          <span>{new Date(team.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <Button className="w-full mt-4" variant="outline">
+                        View Team
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No teams yet</h3>
+                  <p className="text-muted-foreground mb-4">Create your first fantasy cricket team</p>
+                  <Button asChild>
+                    <Link href="/matches">Create Team</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* My Contests Tab */}
+          <TabsContent value="contests" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">My Contests</h2>
+              <Button asChild>
+                <Link href="/contests">Browse Contests</Link>
+              </Button>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {dashboardData.contests.slice(0, 6).map((contest) => (
+                <Card key={contest.id} className="hover:shadow-lg transition-all">
+                  <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle>{contest.name}</CardTitle>
-                        <CardDescription>Entry Fee: ₹{contest.entryFee}</CardDescription>
-                      </div>
-                      <Badge variant="outline" className="uppercase">
+                      <CardTitle className="text-lg">{contest.name}</CardTitle>
+                      <Badge variant={contest.status === 'live' ? 'default' : 'secondary'}>
                         {contest.status}
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Prize Pool</p>
-                        <p className="text-xl font-bold">₹{contest.prizePool.toLocaleString()}</p>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <Trophy className="h-4 w-4 text-yellow-500" />
+                        <span className="text-sm">₹{contest.total_prize.toLocaleString()}</span>
                       </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Teams Joined</p>
-                        <p className="text-xl font-bold">
-                          {contest.joinedTeams}/{contest.totalTeams}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Starts In</p>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <p className="font-medium">{new Date(contest.startTime).toLocaleString()}</p>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{contest.joined_teams}/{contest.max_teams}</span>
                       </div>
                     </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Button variant="outline" asChild>
-                      <Link href={`/contests/${contest.id}`}>View Contest</Link>
-                    </Button>
-                    <Button asChild>
-                      <Link href={`/contests/${contest.id}/join`}>Join Contest</Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>No Contests Joined</CardTitle>
-                <CardDescription>You haven't joined any contests yet.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Join contests to compete with other players and win exciting prizes.
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button asChild>
-                  <Link href="/contests">Browse Contests</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          )}
-        </TabsContent>
+                    
+                    <div className="flex justify-between text-sm">
+                      <span>Entry Fee:</span>
+                      <span>₹{contest.entry_fee}</span>
+                    </div>
+                    
+                    <div className="flex justify-between text-sm">
+                      <span>Starts:</span>
+                      <span>{formatDistanceToNow(new Date(contest.start_time), { addSuffix: true })}</span>
+                    </div>
 
-        <TabsContent value="upcoming" className="mt-6">
-          {isLoading ? (
-            <div className="grid grid-cols-1 gap-6">
-              {[1, 2].map((i) => (
-                <Card key={i} className="overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="p-6 flex flex-col gap-4">
-                      <div className="h-6 w-32 bg-muted animate-pulse rounded-md"></div>
-                      <div className="h-4 w-48 bg-muted animate-pulse rounded-md"></div>
-                      <div className="h-4 w-24 bg-muted animate-pulse rounded-md"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : upcomingMatches.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6">
-              {upcomingMatches.map((match) => (
-                <Card key={match.id}>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle>
-                        {match.teamA} vs {match.teamB}
-                      </CardTitle>
-                      <Badge variant="outline">{match.matchType}</Badge>
-                    </div>
-                    <CardDescription>{match.venue}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">{match.matchDate.toLocaleDateString()}</p>
-                        </div>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">
-                            {match.matchDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Available Contests</p>
-                        <p className="text-xl font-bold">12</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button asChild className="w-full">
-                      <Link href={`/matches/${match.id}/create-team`}>
-                        Create Team
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
+                    <Button className="w-full" variant="outline">
+                      View Contest
                     </Button>
-                  </CardFooter>
+                  </CardContent>
                 </Card>
               ))}
             </div>
-          ) : (
+          </TabsContent>
+
+          {/* Leaderboard Tab */}
+          <TabsContent value="leaderboard" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Leaderboard</h2>
+              <Badge variant="outline">This Week</Badge>
+            </div>
+
             <Card>
-              <CardHeader>
-                <CardTitle>No Upcoming Matches</CardTitle>
-                <CardDescription>There are no upcoming matches at the moment.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Check back later for upcoming matches and create your fantasy teams.
-                </p>
+              <CardContent className="p-0">
+                <div className="space-y-0">
+                  {dashboardData.leaderboard.slice(0, 10).map((entry, index) => (
+                    <div 
+                      key={entry.id} 
+                      className={`flex items-center justify-between p-4 border-b last:border-b-0 ${
+                        entry.user_name === user?.name ? 'bg-primary/5' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                          index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                          index === 1 ? 'bg-gray-100 text-gray-800' :
+                          index === 2 ? 'bg-orange-100 text-orange-800' :
+                          'bg-muted text-muted-foreground'
+                        }`}>
+                          {entry.rank}
+                        </div>
+                        
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={`/user-${entry.user_id}.jpg`} />
+                          <AvatarFallback>
+                            {entry.user_name.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div>
+                          <p className="font-semibold">{entry.user_name}</p>
+                          <p className="text-sm text-muted-foreground">{entry.team_name}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="text-right">
+                        <p className="font-semibold">{entry.points} pts</p>
+                        {entry.prize_won > 0 && (
+                          <p className="text-sm text-green-600">₹{entry.prize_won}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
-          )}
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 }
