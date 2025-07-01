@@ -15,10 +15,21 @@ import { formatDistanceToNow } from "date-fns"
 export default function DashboardPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
-  const [teams, setTeams] = useState([])
-  const [contests, setContests] = useState([])
-  const [upcomingMatches, setUpcomingMatches] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  
+  const [dashboardData, setDashboardData] = useState({
+    matches: [],
+    teams: [],
+    contests: [],
+    leaderboard: [],
+    userStats: {
+      totalPoints: 0,
+      rank: 0,
+      teamsCreated: 0,
+      contestsJoined: 0,
+      totalWinnings: 0
+    }
+  })
+  const [dataLoading, setDataLoading] = useState(true)
 
   useEffect(() => {
     if (!loading && !user) {
