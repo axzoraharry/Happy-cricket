@@ -84,73 +84,69 @@ export default function DashboardPage() {
     }
   }
 
-  if (loading || !user) {
+  if (loading || dataLoading) {
     return (
-      <div className="container flex h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-lg">Loading...</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground">Loading your dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="container py-10">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, {user.name}! Manage your teams and contests.</p>
-        </div>
-        <Button asChild className="mt-4 md:mt-0">
-          <Link href="/matches">Create New Team</Link>
-        </Button>
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="container py-8">
+        {/* Welcome Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src="/placeholder.svg" />
+              <AvatarFallback className="text-lg">
+                {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-3xl font-bold">Welcome back, {user?.name?.split(' ')[0] || 'Champion'}!</h1>
+              <p className="text-muted-foreground">Ready to create your winning team?</p>
+            </div>
+          </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Teams</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{teams.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {teams.length > 0 ? "+1 from last month" : "Create your first team"}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Contests Joined</CardTitle>
-            <Trophy className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">7</div>
-            <p className="text-xs text-muted-foreground">+2 from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Winnings</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹2,350</div>
-            <p className="text-xs text-muted-foreground">+₹550 from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Highest Rank</CardTitle>
-            <Trophy className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">#42</div>
-            <p className="text-xs text-muted-foreground">Out of 10,000+ players</p>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-primary">{dashboardData.userStats.totalPoints}</div>
+                <p className="text-sm text-muted-foreground">Total Points</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-green-600">#{dashboardData.userStats.rank}</div>
+                <p className="text-sm text-muted-foreground">Rank</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-blue-600">{dashboardData.userStats.teamsCreated}</div>
+                <p className="text-sm text-muted-foreground">Teams</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-purple-600">{dashboardData.userStats.contestsJoined}</div>
+                <p className="text-sm text-muted-foreground">Contests</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-yellow-600">₹{dashboardData.userStats.totalWinnings}</div>
+                <p className="text-sm text-muted-foreground">Winnings</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
       <Tabs defaultValue="teams" className="mt-8">
         <TabsList className="grid w-full md:w-auto grid-cols-3">
