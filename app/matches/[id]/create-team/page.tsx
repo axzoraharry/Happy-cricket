@@ -11,19 +11,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Star, Users, Trophy, ArrowLeft, Zap } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 
-export default function CreateTeamPage({ params }: { params: { id: string } }) {
-  const { user, loading } = useAuth()
+export default function CreateTeamPage() {
+  const { id: matchId } = useParams()
   const router = useRouter()
-  const { toast } = useToast()
-  const [teamName, setTeamName] = useState("")
-  const [selectedPlayers, setSelectedPlayers] = useState<any[]>([])
-  const [captain, setCaptain] = useState<string | null>(null)
-  const [viceCaptain, setViceCaptain] = useState<string | null>(null)
-  const [availablePlayers, setAvailablePlayers] = useState<any[]>([])
-  const [match, setMatch] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [credits, setCredits] = useState(10000)
-  const [activeTab, setActiveTab] = useState("WK")
+  
+  const [match, setMatch] = useState(null)
+  const [players, setPlayers] = useState([])
+  const [selectedPlayers, setSelectedPlayers] = useState([])
+  const [captain, setCaptain] = useState(null)
+  const [viceCaptain, setViceCaptain] = useState(null)
+  const [budget, setBudget] = useState(100)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [activeRole, setActiveRole] = useState("all")
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!loading && !user) {
