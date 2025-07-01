@@ -56,10 +56,25 @@ export function LiveScore({ matchId }: LiveScoreProps) {
 
   const fetchLiveScore = async () => {
     try {
-      const data = await liveScoreAPI.getLiveScore(matchId)
-      setLiveData(data)
-      setCommentary(data.commentary || [])
-      setIsLive(data.status === 'live')
+      // First check if we have real live matches
+      const matchesResponse = await fetch('/api/matches?status=live')
+      const matchesData = await matchesResponse.json()
+      
+      if (matchesData.matches && matchesData.matches.length > 0) {
+        // We have live matches, get live score data
+        const data = await liveScoreAPI.getLiveScore(matchId)
+        setLiveData(data)
+        setCommentary(data.commentary || [])
+        setIsLive(data.status === 'live')
+      } else {
+        // No live matches, show message
+        setLiveData({
+          status: 'no_live_matches',
+          message: 'No live matches currently. Check upcoming matches for future games.',
+          teams: null
+        })
+        setIsLive(false)
+      }
       setLoading(false)
     } catch (error) {
       console.error('Error fetching live score:', error)
