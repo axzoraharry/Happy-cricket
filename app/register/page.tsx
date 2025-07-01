@@ -44,19 +44,33 @@ export default function RegisterPage() {
 
     try {
       setIsLoading(true)
-      // In a real app, this would make an API call to register the user
-      // Simulating registration
-      setTimeout(() => {
-        toast({
-          title: "Success",
-          description: "Your account has been created",
-        })
-        router.push("/login")
-      }, 1500)
-    } catch (error) {
+      
+      // Make API call to register the user
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed')
+      }
+
+      toast({
+        title: "Success",
+        description: "Your account has been created successfully",
+      })
+      
+      // Redirect to login page
+      router.push("/login")
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Something went wrong. Please try again.",
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       })
     } finally {
