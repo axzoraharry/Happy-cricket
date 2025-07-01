@@ -26,176 +26,51 @@ export default function CreateTeamPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login")
-    }
-  }, [user, loading, router])
+    fetchMatchData()
+    fetchPlayers()
+  }, [matchId])
 
-  useEffect(() => {
-    // In a real app, this would fetch from an API
-    const fetchData = async () => {
-      try {
-        // Simulating API calls with mock data
-        setTimeout(() => {
-          setMatch({
-            id: params.id,
-            teamA: "India",
-            teamB: "Australia",
-            venue: "Melbourne Cricket Ground",
-            matchDate: new Date(Date.now() + 86400000), // tomorrow
-            matchType: "T20",
-          })
-
-          setAvailablePlayers([
-            {
-              id: "p1",
-              name: "Virat Kohli",
-              country: "India",
-              role: "BAT",
-              price: 10000,
-              points: 0,
-              imageUrl: "/cricketer-in-action.png",
-            },
-            {
-              id: "p2",
-              name: "Rohit Sharma",
-              country: "India",
-              role: "BAT",
-              price: 9500,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=Rohit Sharma cricket player",
-            },
-            {
-              id: "p3",
-              name: "KL Rahul",
-              country: "India",
-              role: "WK",
-              price: 9000,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=KL Rahul cricket player",
-            },
-            {
-              id: "p4",
-              name: "Rishabh Pant",
-              country: "India",
-              role: "WK",
-              price: 8500,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=Rishabh Pant cricket player",
-            },
-            {
-              id: "p5",
-              name: "Hardik Pandya",
-              country: "India",
-              role: "AR",
-              price: 9200,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=Hardik Pandya cricket player",
-            },
-            {
-              id: "p6",
-              name: "Ravindra Jadeja",
-              country: "India",
-              role: "AR",
-              price: 8800,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=Ravindra Jadeja cricket player",
-            },
-            {
-              id: "p7",
-              name: "Jasprit Bumrah",
-              country: "India",
-              role: "BOWL",
-              price: 9300,
-              points: 0,
-              imageUrl: "/dynamic-cricketer.png",
-            },
-            {
-              id: "p8",
-              name: "Mohammed Shami",
-              country: "India",
-              role: "BOWL",
-              price: 8700,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=Mohammed Shami cricket player",
-            },
-            {
-              id: "p9",
-              name: "Steve Smith",
-              country: "Australia",
-              role: "BAT",
-              price: 9800,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=Steve Smith cricket player",
-            },
-            {
-              id: "p10",
-              name: "David Warner",
-              country: "Australia",
-              role: "BAT",
-              price: 9600,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=David Warner cricket player",
-            },
-            {
-              id: "p11",
-              name: "Alex Carey",
-              country: "Australia",
-              role: "WK",
-              price: 8400,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=Alex Carey cricket player",
-            },
-            {
-              id: "p12",
-              name: "Glenn Maxwell",
-              country: "Australia",
-              role: "AR",
-              price: 9100,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=Glenn Maxwell cricket player",
-            },
-            {
-              id: "p13",
-              name: "Marcus Stoinis",
-              country: "Australia",
-              role: "AR",
-              price: 8600,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=Marcus Stoinis cricket player",
-            },
-            {
-              id: "p14",
-              name: "Pat Cummins",
-              country: "Australia",
-              role: "BOWL",
-              price: 9400,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=Pat Cummins cricket player",
-            },
-            {
-              id: "p15",
-              name: "Mitchell Starc",
-              country: "Australia",
-              role: "BOWL",
-              price: 9200,
-              points: 0,
-              imageUrl: "/placeholder.svg?height=100&width=100&query=Mitchell Starc cricket player",
-            },
-          ])
-
-          setIsLoading(false)
-        }, 1000)
-      } catch (error) {
-        console.error("Error fetching data:", error)
-        setIsLoading(false)
+  const fetchMatchData = async () => {
+    try {
+      // Fetch match details
+      const response = await fetch(`/api/matches`)
+      const data = await response.json()
+      const matchData = data.matches.find(m => m.id == matchId)
+      
+      if (matchData) {
+        setMatch({
+          ...matchData,
+          teamALogo: `/${matchData.team_a.toLowerCase().replace(' ', '-')}-logo.png`,
+          teamBLogo: `/${matchData.team_b.toLowerCase().replace(' ', '-')}-logo.png`,
+        })
       }
+    } catch (error) {
+      console.error("Error fetching match:", error)
     }
+  }
 
-    if (user) {
-      fetchData()
+  const fetchPlayers = async () => {
+    try {
+      const response = await fetch('/api/players?limit=50')
+      const data = await response.json()
+      
+      // Add team assignment and enhance player data
+      const enhancedPlayers = data.players.map(player => ({
+        ...player,
+        team: Math.random() > 0.5 ? match?.team_a || 'Team A' : match?.team_b || 'Team B',
+        selectedBy: Math.floor(Math.random() * 80) + 10, // % selected by users
+        form: ['Hot', 'Good', 'Average', 'Poor'][Math.floor(Math.random() * 4)],
+        isPlaying: Math.random() > 0.2, // 80% chance playing
+        credits: Math.floor(player.price || (Math.random() * 15 + 5)) // Use price as credits
+      }))
+      
+      setPlayers(enhancedPlayers)
+      setLoading(false)
+    } catch (error) {
+      console.error("Error fetching players:", error)
+      setLoading(false)
     }
-  }, [params.id, user])
+  }
 
   const handleSelectPlayer = (player: any) => {
     // Check if player is already selected
